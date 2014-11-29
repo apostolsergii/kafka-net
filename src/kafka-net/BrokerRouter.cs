@@ -209,12 +209,20 @@ namespace KafkaNet
             {
                 try
                 {
-                    var response = conn.SendAsync(request).Result;
-                    if (response != null && response.Count > 0)
+                    var responseAwait = conn.SendAsync(request);
+                    if (responseAwait.Wait(TimeSpan.FromSeconds(1)))
                     {
-                        var metadataResponse = response.First();
-                        UpdateInternalMetadataCache(metadataResponse);
-                        return;
+                        var response = responseAwait.Result;
+                        if (response != null && response.Count > 0)
+                        {
+                            var metadataResponse = response.First();
+                            UpdateInternalMetadataCache(metadataResponse);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Coudn't connect to kafka");
                     }
                 }
                 catch (Exception ex)
