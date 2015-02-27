@@ -25,10 +25,10 @@ namespace KafkaNet
         /// <param name="maxOffsets"></param>
         /// <param name="time"></param>
         /// <returns></returns>
-        public Task<List<OffsetResponse>> GetTopicOffsetAsync(string topic, int maxOffsets = 2, int time = -1)
+        public async Task<List<OffsetResponse>> GetTopicOffsetAsync(string topic, int maxOffsets = 2, int time = -1)
         {
             var topicMetadata = GetTopic(topic);
-            
+
             //send the offset request to each partition leader
             var sendRequests = topicMetadata.Partitions
                 .GroupBy(x => x.PartitionId)
@@ -51,9 +51,9 @@ namespace KafkaNet
 
                         return route.Connection.SendAsync(request);
                     }).ToArray();
-                 
-               return Task.WhenAll(sendRequests)
-                   .ContinueWith(t => sendRequests.SelectMany(x => x.Result).ToList());
+
+            await Task.WhenAll(sendRequests).ConfigureAwait(false);
+            return sendRequests.SelectMany(x => x.Result).ToList();
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace KafkaNet
         {
             var response = _brokerRouter.GetTopicMetadata(topic);
 
-            if (response.Count <= 0) throw new InvalidTopicMetadataException(string.Format("No metadata could be found for topic: {0}", topic));
+            if (response.Count <= 0) throw new InvalidTopicMetadataException(ErrorResponseCode.NoError, "No metadata could be found for topic: {0}", topic);
 
             return response.First();
         }

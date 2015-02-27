@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -30,7 +30,7 @@ namespace KafkaNet.Common
                         .ToArray();
         }
 
-        public static byte[] ToIntPrefixedBytes(this byte[] value)
+        public static byte[] ToInt32PrefixedBytes(this byte[] value)
         {
             if (value == null) return (-1).ToBytes();
 
@@ -39,7 +39,7 @@ namespace KafkaNet.Common
 						.ToArray();
 		}
 
-        public static string ToUTF8String(this byte[] value)
+        public static string ToUtf8String(this byte[] value)
         {
             if (value == null) return string.Empty;
 
@@ -116,5 +116,26 @@ namespace KafkaNet.Common
 
             return await task;
         }
+
+
+        /// <summary>
+        /// Splits a collection into given batch sizes and returns as an enumerable of batches.
+        /// </summary>
+        public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> collection, int batchSize)
+        {
+            var nextbatch = new List<T>(batchSize);
+            foreach (T item in collection)
+            {
+                nextbatch.Add(item);
+                if (nextbatch.Count == batchSize)
+                {
+                    yield return nextbatch;
+                    nextbatch = new List<T>(batchSize);
+                }
+            }
+            if (nextbatch.Count > 0)
+                yield return nextbatch;
+        }
+
     }
 }

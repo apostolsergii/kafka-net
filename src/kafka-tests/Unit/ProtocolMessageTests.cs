@@ -1,9 +1,11 @@
-﻿using System.Linq;
-using KafkaNet;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using kafka_tests.Helpers;
+using KafkaNet.Common;
 using KafkaNet.Protocol;
 using NUnit.Framework;
-using kafka_tests.Helpers;
-
 
 namespace kafka_tests.Unit
 {
@@ -67,7 +69,44 @@ namespace kafka_tests.Unit
             //This message set has a truncated message bytes at the end of it
             var result = Message.DecodeMessageSet(MessageHelper.FetchResponseMaxBytesOverflow).ToList();
 
+            var message = Encoding.UTF8.GetString(result.First().Value);
+            
+            Assert.That(message, Is.EqualTo("test"));
             Assert.That(result.Count, Is.EqualTo(529));
+        }
+
+        [Test]
+        public void WhenMessageIsTruncatedThenBufferUnderRunExceptionIsThrown()
+        {
+            // arrange
+            var offset = (Int64)0;
+            var message = new Byte[] { };
+            var messageSize = message.Length + 1;
+            var memoryStream = new MemoryStream();
+            var binaryWriter = new BigEndianBinaryWriter(memoryStream);
+            binaryWriter.Write(offset);
+            binaryWriter.Write(messageSize);
+            binaryWriter.Write(message);
+            var payloadBytes = memoryStream.ToArray();
+
+            // act/assert
+            Assert.Throws<BufferUnderRunException>(() => Message.DecodeMessageSet(payloadBytes).ToList());
+        }
+
+        [Test]
+        public void WhenMessageIsExactlyTheSizeOfBufferThenMessageIsDecoded()
+        {
+            // arrange
+            var expectedPayloadBytes = new Byte[] { 1, 2, 3, 4 };
+            var payload = MessageHelper.CreateMessage(0, new Byte[] { 0 }, expectedPayloadBytes);
+
+            // act/assert
+            var messages = Message.DecodeMessageSet(payload).ToList();
+            var actualPayload = messages.First().Value;
+
+            // assert
+            var expectedPayload = new Byte[] { 1, 2, 3, 4 };
+            CollectionAssert.AreEqual(expectedPayload, actualPayload);
         }
     }
 }

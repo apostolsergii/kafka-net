@@ -42,7 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\ThreadWall.cs" />
+    <Compile Include="Common\BigEndianBinaryReader.cs" />
+    <Compile Include="Common\BigEndianBinaryWriter.cs" />
+    <Compile Include="Common\KafkaMessagePacker.cs" />
     <Compile Include="Default\DefaultKafkaConnectionFactory.cs" />
     <Compile Include="Interfaces\IMetadataQueries.cs" />
     <Compile Include="Interfaces\IKafkaTcpSocket.cs" />
@@ -58,10 +60,9 @@
     <Compile Include="Interfaces\IPartitionSelector.cs" />
     <Compile Include="BrokerRouter.cs" />
     <Compile Include="Model\KafkaEndpoint.cs" />
+    <Compile Include="KafkaMetadataProvider.cs" />
     <Compile Include="Protocol\Broker.cs" />
-    <Compile Include="Common\ReadByteStream.cs" />
-    <Compile Include="Common\Crc32.cs" />
-    <Compile Include="Common\WriteByteStream.cs" />
+    <Compile Include="Common\Crc32Provider.cs" />
     <Compile Include="Interfaces\IKafkaConnectionFactory.cs" />
     <Compile Include="Producer.cs" />
     <Compile Include="KafkaConnection.cs" />
